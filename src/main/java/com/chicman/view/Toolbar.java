@@ -123,6 +123,7 @@ public class Toolbar extends HorizontalLayout {
     private void setupUserMenu() {
         userMenu.setStyleName("borderless");
         userMenu.setWidth("125px");
+        userMenu.setId("userMenu");
 
         MenuBar.Command addProductsCmd = (MenuBar.Command) selectedItem -> eventHandler.showAddProductsForm();
         MenuBar.Command logoutCmd = (MenuBar.Command) selectedItem -> eventHandler.logout();

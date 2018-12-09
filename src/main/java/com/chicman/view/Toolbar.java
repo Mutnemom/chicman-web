@@ -20,7 +20,6 @@ public class Toolbar extends HorizontalLayout {
 	private final Button siteName;
 	private final Button btnCart;
 	private final Button btnLogin;
-//	private final Button btnLogout;
 	private final MenuBar userMenu;
 	private final MenuBar topMenu;
     private final Button btnWatches;
@@ -35,7 +34,6 @@ public class Toolbar extends HorizontalLayout {
 		this.siteName = new Button();
 		this.btnCart = new Button();
 		this.btnLogin = new Button();
-//		this.btnLogout = new Button();
 		this.topMenu = new MenuBar();
         this.userMenu = new MenuBar();
 		this.btnWatches = new Button();
@@ -50,9 +48,8 @@ public class Toolbar extends HorizontalLayout {
 	public void setLoginStatusToBtn(boolean loggedIn, Customer activeUser) {
 		if (loggedIn) {
 			btnLogin.setVisible(false);
-//			btnLogout.setVisible(true);
 			userMenu.setVisible(true);
-			loggedUser.setText(activeUser != null? activeUser.getFullName(): "User");
+			loggedUser.setText(null);
 			
 			if (activeUser != null && activeUser.getType() != null && activeUser.getType().equals("A")) {
 				topMenu.setVisible(true);
@@ -61,7 +58,6 @@ public class Toolbar extends HorizontalLayout {
 			}
 		} else {
 			btnLogin.setVisible(true);
-//			btnLogout.setVisible(false);
 			topMenu.setVisible(false);
             userMenu.setVisible(false);
 		}
@@ -70,7 +66,6 @@ public class Toolbar extends HorizontalLayout {
 	public void setTextToAllComponent() {
 		siteName.setCaption(Messages.get("site.name"));
 		btnLogin.setCaption(Messages.get("auth.login"));
-//		btnLogout.setCaption(Messages.get("auth.logout"));
 		btnWatches.setCaption(Messages.get("page.watches.all"));
 		btnMen.setCaption(Messages.get("page.men"));
 		btnWomen.setCaption(Messages.get("page.women"));
@@ -111,7 +106,6 @@ public class Toolbar extends HorizontalLayout {
         setupMenWatchesBtn();
         setupWomenWatchesBtn();
         setupCartBtn();
-//        setupLogoutBtn();
         setupLoginBtn();
         setupUserMenu();
 
@@ -121,7 +115,6 @@ public class Toolbar extends HorizontalLayout {
 		groupBtn.addComponent(btnMen);
 		groupBtn.addComponent(btnWomen);
 		groupBtn.addComponent(btnCart);
-//		groupBtn.addComponent(btnLogout);
 		groupBtn.addComponent(btnLogin);
         groupBtn.addComponent(userMenu);
 		groupBtn.setMargin(false);
@@ -129,11 +122,12 @@ public class Toolbar extends HorizontalLayout {
 
     private void setupUserMenu() {
         userMenu.setStyleName("borderless");
+        userMenu.setWidth("125px");
 
         MenuBar.Command addProductsCmd = (MenuBar.Command) selectedItem -> eventHandler.showAddProductsForm();
         MenuBar.Command logoutCmd = (MenuBar.Command) selectedItem -> eventHandler.logout();
 
-        loggedUser = userMenu.addItem("User", VaadinIcons.USER, null);
+        loggedUser = userMenu.addItem("", VaadinIcons.USER, null);
         loggedUser.addItem("Profiles", VaadinIcons.FILE_TEXT_O, addProductsCmd);
         loggedUser.addItem("Favourites", VaadinIcons.HEART_O, addProductsCmd);
 
@@ -195,14 +189,8 @@ public class Toolbar extends HorizontalLayout {
         btnLogin.addStyleName("colored-when-hover");
         btnLogin.addStyleName("active-noborder");
         btnLogin.setId("loginBtn");
+        btnLogin.setWidth("125px");
     }
-
-//    private void setupLogoutBtn() {
-//        btnLogout.setStyleName("borderless");
-//        btnLogout.addStyleName("colored-when-hover");
-//        btnLogout.addStyleName("active-noborder");
-//        btnLogout.setId("logoutBtn");
-//    }
 
     private void init() {
 	    setSpacing(false);
@@ -221,7 +209,6 @@ public class Toolbar extends HorizontalLayout {
 		siteName.addClickListener(e -> eventHandler.showHomePage());
 		btnHome.addClickListener(e -> eventHandler.showHomePage());
 		btnCart.addClickListener(e -> eventHandler.showCartListInSideWindow());
-//		btnLogout.addClickListener(e -> eventHandler.logout());
 		btnLogin.addClickListener(e -> eventHandler.showLoginPopup());
 
 		btnWatches.addClickListener(e -> {

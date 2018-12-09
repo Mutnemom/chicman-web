@@ -436,6 +436,20 @@ $v-focus-color: #ff8000; // Calculates a suitable color automatically
     }
   }
 
+  #userMenu {
+    span.v-icon.Vaadin-Icons {
+      margin: 2px 0 0 0;
+    }
+
+    span.v-menubar-menuitem-selected {
+      color: white !important;
+
+      &:hover {
+        color: #ff8000 !important;
+      }
+    }
+  }
+
   .indicator {
     width: 20px;
     font-size: 10px;

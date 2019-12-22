@@ -25,4 +25,4 @@
 /.nb-gradle/
 
 .designer
-*/styles.css
+/src/main/resources/VAADIN/themes/chicmantheme/styles.css

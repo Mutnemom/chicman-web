@@ -151,7 +151,7 @@ public class Filter extends VerticalLayout {
     }
 
     private void setupPriceFilter() {
-        List<Product> productList = eventHandler.getProductsRepo().findAll(new Sort(Sort.Direction.ASC, "productPriceSale"));
+        List<Product> productList = eventHandler.getProductsRepo().findAll(Sort.by(Sort.Direction.ASC, "productPriceSale"));
         double minPrice = FilterBean.DEFAULT_MIN_PRICE;
         double maxPrice = FilterBean.DEFAULT_MAX_PRICE;
 

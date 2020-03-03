@@ -1,8 +1,6 @@
 package com.chicman
 
-import co.omise.Client
 import co.omise.ClientException
-import co.omise.models.Charge
 import co.omise.models.OmiseException
 import com.chicman.bean.*
 import com.chicman.model.Customer
@@ -13,6 +11,7 @@ import com.chicman.repository.ProductRepository
 import com.chicman.repository.VerificationTokenRepository
 import com.chicman.service.AuthService
 import com.chicman.service.MemberService
+import com.chicman.utility.LogUtils
 import com.chicman.utility.Messages
 import com.chicman.utility.Utils
 import com.chicman.view.*
@@ -33,7 +32,6 @@ import com.vaadin.server.VaadinRequest
 import com.vaadin.shared.Position
 import com.vaadin.spring.annotation.SpringUI
 import com.vaadin.ui.*
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import java.io.File
 import java.io.FileInputStream
@@ -54,7 +52,7 @@ class ChicManUI @Autowired constructor(
     private val sessionLogIn: LoggedInBean?,
     val productsRepo: ProductRepository,
     val filterBean: FilterBean,
-    val guestBean: GuestBean,
+    private val guestBean: GuestBean,
     private val verificationTokenRepo: VerificationTokenRepository
 ) : UI(), Window.CloseListener {
 
@@ -64,7 +62,6 @@ class ChicManUI @Autowired constructor(
         }
     }
 
-    private val log = LoggerFactory.getLogger(ChicManUI::class.java)
     private var appPath: String? = null
     private var uploadFile: File? = null
     private var watchesView: WatchesView? = null
@@ -83,8 +80,9 @@ class ChicManUI @Autowired constructor(
     val currentUser: Member?
         get() = sessionLogIn?.loggedInUser
 
+
     override fun init(vaadinRequest: VaadinRequest) {
-        /* get guest token */
+        /* get guest token for using without logging in */
         guestBean.token = AuthService.getGuestToken()!!.accessToken!!
 
         // reset filters
@@ -93,79 +91,16 @@ class ChicManUI @Autowired constructor(
 
         appPath = null
         page.setTitle("Chic Man")
-        val mainLayout = VerticalLayout()
-        mainLayout.setMargin(false)
-        mainLayout.isSpacing = false
-        content = mainLayout
-        // for side window
-        flagSideWindowClosed = true
-        sideWindow = Window()
-        sideWindow!!.id = "sideWindow"
-        sideWindow!!.addCloseListener { flagSideWindowClosed = true }
-        // for float window
-        floatWindow = Window()
-        floatWindow!!.id = "floatWindow"
-        floatWindow!!.addCloseListener(this)
-        // for toolbar section
-        toolbar = Toolbar(this)
-        toolbar!!.id = "toolbar"
-        toolbar!!.setTextToAllComponent()
-        toolbar!!.updateCartItemNumber(0 /* sessionCart.productList.size */)
-        mainLayout.addComponent(toolbar)
-        mainLayout.setComponentAlignment(toolbar, Alignment.TOP_CENTER)
-        // for content section
-        val contentSection: ComponentContainer = VerticalLayout()
-        contentSection.id = "main"
-        mainLayout.addComponent(contentSection)
-        // for footer section
-        val footer = Footer()
-        footer.id = "footer"
-        mainLayout.addComponent(footer)
-        mainLayout.setComponentAlignment(footer, Alignment.TOP_CENTER)
-        val homeView = HomeView(this)
-        watchesView = WatchesView(this)
-        menWatchesView = MenWatchesView(this)
-        womenWatchesView = WomenWatchesView(this)
-        val favouriteView = FavouriteView(this)
-        val navigator = Navigator(this, contentSection)
-        navigator.addView(HomeView.NAME, homeView)
-        navigator.addView(WatchesView.NAME, watchesView)
-        navigator.addView(MenWatchesView.NAME, menWatchesView)
-        navigator.addView(WomenWatchesView.NAME, womenWatchesView)
-        navigator.addView(FavouriteView.NAME, favouriteView)
-        setJsFunction()
-        Page.getCurrent().javaScript.execute("extractUrl()")
-        val token = vaadinRequest.getParameter("token")
-        if (token != null) { // retrieve verification token from database
-// check expiry date
-// if valid update enabled field
-// else show message
-            val verificationToken = verificationTokenRepo.findByToken(token)
-            if (verificationToken != null) {
-                val now = LocalDateTime.now(ZoneId.systemDefault())
-                val current = Date.from(now.atZone(ZoneId.systemDefault()).toInstant())
-                val sdf = SimpleDateFormat("yyy-MM-dd HH:mm:ss")
-                log.info("expiry date  : " + sdf.format(verificationToken.expiryDate))
-                log.info("current date : " + sdf.format(current))
-                if (current <= verificationToken.expiryDate) {
+        setupRootLayout()
 
-//                    val storedCustomer = customerRepo.get()
-//                    storedCustomer.enabled = true
+        setupFloatWindow()
+        setupSideWindow()
+        setupToolbar()
+        setupContent()
+        setupFooter()
 
-                    MemberService.verifyAccount(verificationToken)
-
-                    Utils.notify(
-                        Messages.get("confirmation.complete"),
-                        1500,
-                        Position.TOP_CENTER, VaadinIcons.CHECK)
-                } else {
-                    Utils.notify(
-                        Messages.get("confirmation.incomplete"),
-                        1500,
-                        Position.TOP_CENTER, VaadinIcons.CHECK)
-                }
-            }
-        }
+//        setJsFunction()
+//        handleVerificationToken(vaadinRequest)
     }
 
     fun resetFilter() {
@@ -205,8 +140,8 @@ class ChicManUI @Autowired constructor(
 
     fun logout() {
         sessionLogIn!!.loggedInUser = null
-        sessionCart.resetProductList()
-        sessionFavourite.resetProductList()
+//        sessionCart.resetProductList()
+//        sessionFavourite.resetProductList()
         toolbar!!.updateCartItemNumber(0 /* sessionCart.productList.size */)
         toolbar!!.setLoginStatusToBtn(false, null)
     }
@@ -223,7 +158,6 @@ class ChicManUI @Autowired constructor(
                     confirmLink.toString(),
                     newCustomer.email,
                     verificationToken.expiryDate)
-                log.info("email was send.")
                 val message = Messages.get("send.mail.success1") +
                     " " +
                     newCustomer.email +
@@ -232,7 +166,6 @@ class ChicManUI @Autowired constructor(
                 Utils.notify(message, 1500, Position.TOP_CENTER, VaadinIcons.CHECK)
             } catch (e: MessagingException) {
                 e.printStackTrace()
-                log.info("incomplete to sending email.")
             }
         }
     }
@@ -242,7 +175,7 @@ class ChicManUI @Autowired constructor(
         val content = Login(this)
         content.id = "loginForm"
         floatWindow!!.content = content
-        setupFloatWindow()
+        showFloatWindow()
     }
 
     fun showSignUpPopup() {
@@ -250,7 +183,7 @@ class ChicManUI @Autowired constructor(
         val content = SignUp(verificationTokenRepo, this)
         content.id = "signUpForm"
         floatWindow!!.content = content
-        setupFloatWindow()
+        showFloatWindow()
     }
 
     fun exploreProduct(product: Product?, imgProduct: StreamResource?) {
@@ -308,7 +241,6 @@ class ChicManUI @Autowired constructor(
         var flagSuccess = false
         val imageStream: FileInputStream
         val buffer: ByteArray
-        log.info("dial type: $dialType")
         try {
             val price = productPrice.toFloat()
             imageStream = FileInputStream(uploadFile!!)
@@ -325,7 +257,6 @@ class ChicManUI @Autowired constructor(
 
     fun addItemToCart(product: Product?) {
         if (product != null) {
-            log.info("add product : " + product.productBrandId)
             sessionCart.addProductToCart(product)
             floatWindow!!.close()
             toolbar!!.updateCartItemNumber(sessionCart.productList.size)
@@ -339,13 +270,10 @@ class ChicManUI @Autowired constructor(
                 val sideWindowCart = sideWindow!!.content as SideWindowCart
                 sideWindowCart.updateCartList(sessionCart.productList)
             }
-        } else {
-            log.info("add product : null")
         }
     }
 
     fun favouriteProduct(product: Product?) {
-        log.info("favourite product : " + product!!.productBrandId)
         sessionFavourite.addProductToFavourite(product)
     }
 
@@ -392,7 +320,107 @@ class ChicManUI @Autowired constructor(
             is WatchesView -> watchesView!!.filter()
             is MenWatchesView -> menWatchesView!!.filter()
             is WomenWatchesView -> womenWatchesView!!.filter()
-            else -> log.info("Cannot filter in current View.")
+            else -> LogUtils.info("Cannot filter in current View.")
+        }
+    }
+
+    private fun setupRootLayout() {
+        content = VerticalLayout().apply {
+            setMargin(false)
+            isSpacing = false
+        }
+    }
+
+    private fun setupSideWindow() {
+        flagSideWindowClosed = true
+        sideWindow = Window().apply {
+            id = "sideWindow"
+            addCloseListener { flagSideWindowClosed = true }
+        }
+    }
+
+    private fun setupFloatWindow() {
+        floatWindow = Window().apply {
+            id = "floatWindow"
+            addCloseListener(this@ChicManUI)
+        }
+    }
+
+    private fun setupToolbar() {
+        toolbar = Toolbar(this).apply {
+            id = "toolbar"
+            setTextToAllComponent()
+            updateCartItemNumber(0 /* sessionCart.productList.size */)
+
+            (content as? VerticalLayout)?.also {
+                it.addComponent(this)
+                it.setComponentAlignment(this, Alignment.TOP_CENTER)
+            }
+        }
+    }
+
+    private fun setupFooter() {
+        Footer().apply {
+            id = "footer"
+
+            (content as? VerticalLayout)?.also {
+                it.addComponent(this)
+                it.setComponentAlignment(this, Alignment.TOP_CENTER)
+            }
+        }
+    }
+
+    private fun setupContent() {
+        womenWatchesView = WomenWatchesView(this)
+        menWatchesView = MenWatchesView(this)
+        watchesView = WatchesView(this)
+
+        VerticalLayout().apply {
+            id = "main"
+            (content as? VerticalLayout)?.also { it.addComponent(this) }
+
+            navigator = Navigator(this@ChicManUI, this).apply {
+                addView(HomeView.NAME, HomeView(this@ChicManUI))
+                addView(WatchesView.NAME, watchesView)
+                addView(MenWatchesView.NAME, menWatchesView)
+                addView(WomenWatchesView.NAME, womenWatchesView)
+                addView(FavouriteView.NAME, FavouriteView(this@ChicManUI))
+            }
+        }
+    }
+
+    private fun handleVerificationToken(vaadinRequest: VaadinRequest) {
+        Page.getCurrent().javaScript.execute("extractUrl()")
+        val token = vaadinRequest.getParameter("token")
+        if (token != null) {
+            // retrieve verification token from database
+            // check expiry date
+            // if valid update enabled field
+            // else show message
+
+            val verificationToken = verificationTokenRepo.findByToken(token)
+            if (verificationToken != null) {
+                val now = LocalDateTime.now(ZoneId.systemDefault())
+                val current = Date.from(now.atZone(ZoneId.systemDefault()).toInstant())
+                val sdf = SimpleDateFormat("yyy-MM-dd HH:mm:ss")
+                if (current <= verificationToken.expiryDate) {
+
+                    //                    val storedCustomer = customerRepo.get()
+                    //                    storedCustomer.enabled = true
+
+                    MemberService.verifyAccount(verificationToken)
+
+                    Utils.notify(
+                        Messages.get("confirmation.complete"),
+                        1500,
+                        Position.TOP_CENTER, VaadinIcons.CHECK)
+                } else {
+                    Utils.notify(
+                        Messages.get("confirmation.incomplete"),
+                        1500,
+                        Position.TOP_CENTER, VaadinIcons.CHECK)
+                }
+            }
         }
     }
 
@@ -400,22 +428,22 @@ class ChicManUI @Autowired constructor(
         try {
             val sideWindowCart = sideWindow!!.content as SideWindowCart
             val textAmount = sideWindowCart.totalPrice.toString()
-            val dec = textAmount.substring(0, textAmount.indexOf('.'))
+//            val dec = textAmount.substring(0, textAmount.indexOf('.'))
             var flo = textAmount.substring(textAmount.indexOf('.') + 1)
             if (flo.length == 1) {
                 flo += "0"
             }
-            log.info("amount = $textAmount")
-            log.info("dec = $dec")
-            log.info("flo = $flo")
-            val totalAmount = (dec + flo).toInt()
-            log.info("int amount = $totalAmount")
-            val client = Client(
-                "pkey_test_5bdl08brxlvpou9e3nb",
-                "skey_test_5bdl08bs84aysjyesv8")
-            val charge = client.charges()
-                .create(Charge.Create().amount(totalAmount.toLong()).currency("THB").card(token))
-            log.info("Created charge: " + charge.id)
+
+//            val totalAmount = (dec + flo).toInt()
+//            val client = Client(
+//                "pkey_test_5bdl08brxlvpou9e3nb",
+//                "skey_test_5bdl08bs84aysjyesv8"
+//            )
+//
+//            val charge = client.charges().create(
+//                Charge.Create().amount(totalAmount.toLong()).currency("THB").card(token)
+//            )
+
             sessionCart.checkoutAllProductFromCart()
             toolbar!!.updateCartItemNumber(sessionCart.productList.size)
             sideWindowCart.updateCartList(sessionCart.productList)
@@ -441,7 +469,6 @@ class ChicManUI @Autowired constructor(
     private fun setJsFunction() {
         com.vaadin.ui.JavaScript.getCurrent().addFunction("receiveId") { args ->
             val id = args.getString(0)
-            log.info("received id from client : $id")
             genCharge(id)
         }
 
@@ -452,19 +479,9 @@ class ChicManUI @Autowired constructor(
             }
         }
 
-        com.vaadin.ui.JavaScript.getCurrent()
-            .addFunction("receiveUrl") { args -> appPath = args.getString(0) }
-    }
-
-    private fun setupFloatWindow() {
-        floatWindow!!.center()
-        floatWindow!!.isClosable = false
-        floatWindow!!.isResizable = false
-        floatWindow!!.setWidth("300px")
-        floatWindow!!.setHeightUndefined()
-        floatWindow!!.isModal = true
-        floatWindow!!.addBlurListener { Page.getCurrent().javaScript.execute("getFocused()") }
-        addWindow(floatWindow)
+        com.vaadin.ui.JavaScript.getCurrent().addFunction("receiveUrl") { args ->
+            appPath = args.getString(0)
+        }
     }
 
     private fun setFlagSideWindowClosed(windowClosed: Boolean) {
@@ -477,6 +494,17 @@ class ChicManUI @Autowired constructor(
             is MenWatchesView -> currentView.updateFavourite(productList)
             is WomenWatchesView -> currentView.updateFavourite(productList)
         }
+    }
+
+    private fun showFloatWindow() {
+        floatWindow!!.center()
+        floatWindow!!.isClosable = false
+        floatWindow!!.isResizable = false
+        floatWindow!!.setWidth("300px")
+        floatWindow!!.setHeightUndefined()
+        floatWindow!!.isModal = true
+        floatWindow!!.addBlurListener { Page.getCurrent().javaScript.execute("getFocused()") }
+        addWindow(floatWindow)
     }
 
 }

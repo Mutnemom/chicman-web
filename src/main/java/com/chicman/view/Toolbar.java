@@ -2,6 +2,7 @@ package com.chicman.view;
 
 import com.chicman.ChicManUI;
 import com.chicman.model.Customer;
+import com.chicman.model.Member;
 import com.chicman.utility.Messages;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.Page;
@@ -45,7 +46,7 @@ public class Toolbar extends HorizontalLayout {
         setEvent();
     }
 
-    public void setLoginStatusToBtn(boolean loggedIn, Customer activeUser) {
+    public void setLoginStatusToBtn(boolean loggedIn, Member activeUser) {
         if (loggedIn) {
             btnLogin.setVisible(false);
             userMenu.setVisible(true);

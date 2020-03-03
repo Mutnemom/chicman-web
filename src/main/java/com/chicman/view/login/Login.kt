@@ -68,7 +68,7 @@ class Login(private val eventHandler: ChicManUI) : VerticalLayout() {
         btnLogin.styleName = "primary"
         btnLogin.addBlurListener { Page.getCurrent().javaScript.execute("getFocused()") }
 
-        btnLoginPart.addChild(btn= btnLogin)
+        btnLoginPart.addChild(btn = btnLogin)
         btnTemp.setStyleCorrect()
         btnLoginPart.addComponent(btnTemp)
         btnLoginPart.setComponentAlignment(btnTemp, Alignment.BOTTOM_RIGHT)
@@ -89,10 +89,18 @@ class Login(private val eventHandler: ChicManUI) : VerticalLayout() {
 
     private fun TextField.addCustomBlurListener(btn: Button) {
         addBlurListener {
-            when (Utils.isValidPasswordLogin(this as PasswordField)) {
-                true -> btn.setStyleName(VALID_FIELD, true)
-                false -> btn.removeStyleName(VALID_FIELD)
+            if (this is PasswordField) {
+                when (Utils.isValidPasswordLogin(this)) {
+                    true -> btn.setStyleName(VALID_FIELD, true)
+                    false -> btn.removeStyleName(VALID_FIELD)
+                }
+            } else {
+                when (Utils.isValidEmail(this)) {
+                    true -> btn.setStyleName(VALID_FIELD, true)
+                    false -> btn.removeStyleName(VALID_FIELD)
+                }
             }
+
             Page.getCurrent().javaScript.execute("getFocused()")
         }
     }

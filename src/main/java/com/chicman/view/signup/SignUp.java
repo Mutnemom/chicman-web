@@ -3,8 +3,8 @@ package com.chicman.view.signup;
 import com.chicman.ChicManUI;
 import com.chicman.model.Customer;
 import com.chicman.model.VerificationToken;
-import com.chicman.repository.CustomerRepository;
 import com.chicman.repository.VerificationTokenRepository;
+import com.chicman.service.AuthService;
 import com.chicman.utility.Messages;
 import com.chicman.utility.Utils;
 import com.vaadin.icons.VaadinIcons;
@@ -14,14 +14,12 @@ import com.vaadin.spring.annotation.SpringComponent;
 import com.vaadin.spring.annotation.UIScope;
 import com.vaadin.ui.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @SpringComponent
 @UIScope
 public class SignUp extends VerticalLayout {
 
-	private final CustomerRepository customerRepo;
 	private final VerificationTokenRepository verificationTokenRepo;
 	private final ChicManUI eventHandler;
 	private final TextField fullName;
@@ -35,8 +33,7 @@ public class SignUp extends VerticalLayout {
     private Button btnPasswordConfirmCorrect;
     private Button btnTemp;
 
-    public SignUp(CustomerRepository customerRepo, VerificationTokenRepository verificationTokenRepo, ChicManUI eventHandler) {
-		this.customerRepo = customerRepo;
+    public SignUp(VerificationTokenRepository verificationTokenRepo, ChicManUI eventHandler) {
 		this.verificationTokenRepo = verificationTokenRepo;
 		this.eventHandler = eventHandler;
 		this.fullName = new TextField(Messages.get("auth.username"));
@@ -292,8 +289,15 @@ public class SignUp extends VerticalLayout {
 		    if (!Utils.isValidPassword(password)) return;
             if (!Utils.isValidPasswordConfirm(passwordConfirm, password)) return;
 
+            /*
+            check is existing email
+
             List<Customer> storedCustomer = customerRepo.findByEmail(email.getValue());
             if (storedCustomer.size() > 0) {
+
+             */
+
+            if (1 > 0) {
                 // email usable
                 String error = Messages.get("error.sign_up.failed2") +
                         " " +
@@ -308,7 +312,7 @@ public class SignUp extends VerticalLayout {
                 btnEmailCorrect.removeStyleName("validate-status-correct");
             } else {
                 Customer newUser = new Customer(fullName.getValue(), email.getValue(), password.getValue());
-                customerRepo.save(newUser);
+                // AuthService.register();
 
                 String token = UUID.randomUUID().toString();
                 VerificationToken verificationToken = new VerificationToken(token, newUser.getCustomerId());

@@ -30,7 +30,7 @@ class WatchesView(private val eventHandler: ChicManUI) :
 
     override fun enter(event: ViewChangeEvent) {
         log.info("enter All Watches view with parameter /" + event.parameters)
-        eventHandler.toolbar.setMenuAllWatchesActive()
+        eventHandler.toolbar?.setMenuAllWatchesActive()
         eventHandler.resetFilter()
         inputFilter!!.clearAll()
         sortItemByPopularity()

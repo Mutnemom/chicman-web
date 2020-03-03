@@ -35,10 +35,10 @@ class HomeView(private val eventHandler: ChicManUI) : VerticalLayout(), View {
     }
 
     private fun setEvent() {
-        btnViewAll.addClickListener { eventHandler.toolbar.clickWatchesWithDiscount() }
-        btnShopNow.addClickListener { eventHandler.toolbar.clickWatches() }
-        btnWomen.addClickListener { eventHandler.toolbar.clickWomen() }
-        btnMen.addClickListener { eventHandler.toolbar.clickMen() }
+        btnViewAll.addClickListener { eventHandler.toolbar?.clickWatchesWithDiscount() }
+        btnShopNow.addClickListener { eventHandler.toolbar?.clickWatches() }
+        btnWomen.addClickListener { eventHandler.toolbar?.clickWomen() }
+        btnMen.addClickListener { eventHandler.toolbar?.clickMen() }
     }
 
     private fun addTopHighlightSection() { // temp used for show scrollbar

@@ -30,7 +30,7 @@ class MenWatchesView(private val eventHandler: ChicManUI) : VerticalLayout(),
     private var inputFilter: Filter? = null
     override fun enter(event: ViewChangeEvent) {
         log.info("enter Men Watches view with parameter /" + event.parameters)
-        eventHandler.toolbar.setMenuMenWatchesActive()
+        eventHandler.toolbar?.setMenuMenWatchesActive()
         eventHandler.resetFilter()
         inputFilter!!.clearAll()
         sortItemByPopularity()

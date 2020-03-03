@@ -1,306 +1,272 @@
-package com.chicman.view;
+package com.chicman.view
 
-import com.chicman.ChicManUI;
-import com.chicman.model.Customer;
-import com.chicman.model.Member;
-import com.chicman.utility.Messages;
-import com.vaadin.icons.VaadinIcons;
-import com.vaadin.server.Page;
-import com.vaadin.server.ThemeResource;
-import com.vaadin.spring.annotation.SpringComponent;
-import com.vaadin.spring.annotation.UIScope;
-import com.vaadin.ui.*;
-import com.vaadin.ui.MenuBar.MenuItem;
+import com.chicman.ChicManUI
+import com.chicman.model.Member
+import com.chicman.utility.Messages
+import com.vaadin.icons.VaadinIcons
+import com.vaadin.server.Page
+import com.vaadin.server.ThemeResource
+import com.vaadin.spring.annotation.SpringComponent
+import com.vaadin.spring.annotation.UIScope
+import com.vaadin.ui.*
 
 @SpringComponent
 @UIScope
-public class Toolbar extends HorizontalLayout {
+class Toolbar(private val eventHandler: ChicManUI) : HorizontalLayout() {
 
-    private final ChicManUI eventHandler;
-    private final Image logo;
-    private final Button siteName;
-    private final Button btnCart;
-    private final Button btnLogin;
-    private final MenuBar userMenu;
-    private final MenuBar topMenu;
-    private final Button btnWatches;
-    private final Button btnMen;
-    private final Button btnWomen;
-    private final Button btnHome;
-    private MenuItem loggedUser;
+    private val logo: Image = Image()
+    private val siteName: Button = Button()
+    private val btnCart: Button = Button()
+    private val btnLogin: Button = Button()
+    private val userMenu: MenuBar = MenuBar()
+    private val topMenu: MenuBar = MenuBar()
+    private val btnWatches: Button = Button()
+    private val btnMen: Button = Button()
+    private val btnWomen: Button = Button()
+    private val btnHome: Button = Button()
 
-    public Toolbar(ChicManUI eventHandler) {
-        this.eventHandler = eventHandler;
-        this.logo = new Image();
-        this.siteName = new Button();
-        this.btnCart = new Button();
-        this.btnLogin = new Button();
-        this.topMenu = new MenuBar();
-        this.userMenu = new MenuBar();
-        this.btnWatches = new Button();
-        this.btnMen = new Button();
-        this.btnWomen = new Button();
-        this.btnHome = new Button();
+    private lateinit var loggedUser: MenuBar.MenuItem
 
-        init();
-        setEvent();
-    }
-
-    public void setLoginStatusToBtn(boolean loggedIn, Member activeUser) {
+    fun setLoginStatusToBtn(loggedIn: Boolean, activeUser: Member?) {
         if (loggedIn) {
-            btnLogin.setVisible(false);
-            userMenu.setVisible(true);
-            loggedUser.setText(null);
-
-            if (activeUser != null && activeUser.getType() != null && activeUser.getType().equals("A")) {
-                topMenu.setVisible(true);
-            } else {
-                topMenu.setVisible(false);
-            }
+            btnLogin.isVisible = false
+            userMenu.isVisible = true
+            loggedUser.text = null
+            topMenu.isVisible = activeUser?.type != null && activeUser.type == "A"
         } else {
-            btnLogin.setVisible(true);
-            topMenu.setVisible(false);
-            userMenu.setVisible(false);
+            btnLogin.isVisible = true
+            topMenu.isVisible = false
+            userMenu.isVisible = false
         }
     }
 
-    public void setTextToAllComponent() {
-        siteName.setCaption(Messages.get("site.name"));
-        btnLogin.setCaption(Messages.get("auth.login"));
-        btnWatches.setCaption(Messages.get("page.watches.all"));
-        btnMen.setCaption(Messages.get("page.men"));
-        btnWomen.setCaption(Messages.get("page.women"));
-        btnCart.setCaption(Messages.get("cart"));
-        btnHome.setCaption(Messages.get("page.home"));
+    fun setTextToAllComponent() {
+        siteName.caption = Messages.get("site.name")
+        btnLogin.caption = Messages.get("auth.login")
+        btnWatches.caption = Messages.get("page.watches.all")
+        btnMen.caption = Messages.get("page.men")
+        btnWomen.caption = Messages.get("page.women")
+        btnCart.caption = Messages.get("cart")
+        btnHome.caption = Messages.get("page.home")
     }
 
-    public void updateCartItemNumber(int number) {
-        Page.getCurrent().getJavaScript().execute("showCartItem(" + number + ")");
+    fun updateCartItemNumber(number: Int) {
+        Page.getCurrent().javaScript.execute("showCartItem($number)")
     }
 
-    public void clickHome() {
-        Page.getCurrent().getUI().getNavigator().navigateTo(HomeView.NAME);
-        clearActiveMenuStyle();
-        setActiveMenuStyle(btnHome);
+    fun clickHome() {
+        Page.getCurrent().ui.navigator.navigateTo(HomeView.NAME)
+        clearActiveMenuStyle()
+        setActiveMenuStyle(btnHome)
     }
 
-    private void setupLogo() {
-        HorizontalLayout groupLogo = new HorizontalLayout();
-        addComponent(groupLogo);
-        groupLogo.setWidthUndefined();
-        setComponentAlignment(groupLogo, Alignment.MIDDLE_LEFT);
-
-        logo.setSource(new ThemeResource("images/icon_chicman.png"));
-        logo.setWidth("50px");
-        logo.setHeight("50px");
-        logo.setId("logo");
-        groupLogo.addComponent(logo);
-        groupLogo.setComponentAlignment(logo, Alignment.MIDDLE_LEFT);
-
-        siteName.setId("siteName");
-        siteName.setStyleName("borderless");
-        groupLogo.addComponent(siteName);
-        groupLogo.setComponentAlignment(siteName, Alignment.MIDDLE_LEFT);
+    private fun setupLogo() {
+        val groupLogo = HorizontalLayout()
+        addComponent(groupLogo)
+        groupLogo.setWidthUndefined()
+        setComponentAlignment(groupLogo, Alignment.MIDDLE_LEFT)
+        logo.source = ThemeResource("images/icon_chicman.png")
+        logo.setWidth("50px")
+        logo.setHeight("50px")
+        logo.id = "logo"
+        groupLogo.addComponent(logo)
+        groupLogo.setComponentAlignment(logo, Alignment.MIDDLE_LEFT)
+        siteName.id = "siteName"
+        siteName.styleName = "borderless"
+        groupLogo.addComponent(siteName)
+        groupLogo.setComponentAlignment(siteName, Alignment.MIDDLE_LEFT)
     }
 
-    private void setupMenuBar() {
-        HorizontalLayout groupBtn = new HorizontalLayout();
-        addComponentsAndExpand(groupBtn);
-        setComponentAlignment(groupBtn, Alignment.MIDDLE_RIGHT);
-
-        setupHomeBtn();
-        setupAdminMenu();
-        setupWatchesBtn();
-        setupMenWatchesBtn();
-        setupWomenWatchesBtn();
-        setupCartBtn();
-        setupLoginBtn();
-        setupUserMenu();
-
-        groupBtn.addComponent(btnHome);
-        groupBtn.setExpandRatio(btnHome, 1);
-        groupBtn.setComponentAlignment(btnHome, Alignment.MIDDLE_RIGHT);
-        groupBtn.addComponent(topMenu);
-        groupBtn.addComponent(btnWatches);
-        groupBtn.addComponent(btnMen);
-        groupBtn.addComponent(btnWomen);
-        groupBtn.addComponent(btnCart);
-        groupBtn.addComponent(btnLogin);
-        groupBtn.addComponent(userMenu);
-        groupBtn.setMargin(false);
+    private fun setupMenuBar() {
+        val groupBtn = HorizontalLayout()
+        addComponentsAndExpand(groupBtn)
+        setComponentAlignment(groupBtn, Alignment.MIDDLE_RIGHT)
+        setupHomeBtn()
+        setupAdminMenu()
+        setupWatchesBtn()
+        setupMenWatchesBtn()
+        setupWomenWatchesBtn()
+        setupCartBtn()
+        setupLoginBtn()
+        setupUserMenu()
+        groupBtn.addComponent(btnHome)
+        groupBtn.setExpandRatio(btnHome, 1f)
+        groupBtn.setComponentAlignment(btnHome, Alignment.MIDDLE_RIGHT)
+        groupBtn.addComponent(topMenu)
+        groupBtn.addComponent(btnWatches)
+        groupBtn.addComponent(btnMen)
+        groupBtn.addComponent(btnWomen)
+        groupBtn.addComponent(btnCart)
+        groupBtn.addComponent(btnLogin)
+        groupBtn.addComponent(userMenu)
+        groupBtn.setMargin(false)
     }
 
-    private void setupUserMenu() {
-        userMenu.setStyleName("borderless");
-        userMenu.setWidth("125px");
-        userMenu.setId("userMenu");
-
-        loggedUser = userMenu.addItem("", VaadinIcons.USER, null);
-
-        loggedUser.addItem("Profiles", VaadinIcons.FILE_TEXT_O, null);
-
+    private fun setupUserMenu() {
+        userMenu.styleName = "borderless"
+        userMenu.setWidth("125px")
+        userMenu.id = "userMenu"
+        loggedUser = userMenu.addItem("", VaadinIcons.USER, null)
+        loggedUser.addItem("Profiles", VaadinIcons.FILE_TEXT_O, null)
         loggedUser.addItem("Favourites",
-                VaadinIcons.HEART_O,
-                (MenuBar.Command) it -> Page.getCurrent().getUI().getNavigator().navigateTo(FavouriteView.NAME));
-
-        loggedUser.addSeparator();
+            VaadinIcons.HEART_O,
+            MenuBar.Command { Page.getCurrent().ui.navigator.navigateTo(FavouriteView.NAME) })
+        loggedUser.addSeparator()
         loggedUser.addItem(Messages.get("auth.logout"),
-                VaadinIcons.SIGN_OUT,
-                (MenuBar.Command) it -> {
-                    eventHandler.logout();
-                    clickHome();
-                });
-
-        userMenu.setAutoOpen(true);
+            VaadinIcons.SIGN_OUT,
+            MenuBar.Command {
+                eventHandler.logout()
+                clickHome()
+            })
+        userMenu.isAutoOpen = true
     }
 
-    private void setupAdminMenu() {
-        topMenu.setStyleName("borderless");
-
-        MenuBar.Command addProductsCmd = (MenuBar.Command) selectedItem -> eventHandler.showAddProductsForm();
-        MenuItem admin = topMenu.addItem("Admin", null, null);
-        admin.addItem("Add Products", VaadinIcons.PLUS, addProductsCmd);
+    private fun setupAdminMenu() {
+        topMenu.styleName = "borderless"
+        val admin = topMenu.addItem("Admin", null, null)
+        admin.addItem("Add Products", VaadinIcons.PLUS, MenuBar.Command { eventHandler.showAddProductsForm() })
     }
 
-    private void setupHomeBtn() {
-        btnHome.setStyleName("borderless");
-        btnHome.addStyleName("active-noborder");
-        btnHome.addStyleName("active_menu");
-        btnHome.setId("womenBtn");
+    private fun setupHomeBtn() {
+        btnHome.styleName = "borderless"
+        btnHome.addStyleName("active-noborder")
+        btnHome.addStyleName("active_menu")
+        btnHome.id = "womenBtn"
     }
 
-    private void setupWomenWatchesBtn() {
-        btnWomen.setStyleName("borderless");
-        btnWomen.addStyleName("colored-when-hover");
-        btnWomen.addStyleName("active-noborder");
-        btnWomen.setId("womenBtn");
+    private fun setupWomenWatchesBtn() {
+        btnWomen.styleName = "borderless"
+        btnWomen.addStyleName("colored-when-hover")
+        btnWomen.addStyleName("active-noborder")
+        btnWomen.id = "womenBtn"
     }
 
-    private void setupMenWatchesBtn() {
-        btnMen.setStyleName("borderless");
-        btnMen.addStyleName("colored-when-hover");
-        btnMen.addStyleName("active-noborder");
-        btnMen.setId("menBtn");
+    private fun setupMenWatchesBtn() {
+        btnMen.styleName = "borderless"
+        btnMen.addStyleName("colored-when-hover")
+        btnMen.addStyleName("active-noborder")
+        btnMen.id = "menBtn"
     }
 
-    private void setupWatchesBtn() {
-        btnWatches.setStyleName("borderless");
-        btnWatches.addStyleName("colored-when-hover");
-        btnWatches.addStyleName("active-noborder");
-        btnWatches.setId("watchesBtn");
+    private fun setupWatchesBtn() {
+        btnWatches.styleName = "borderless"
+        btnWatches.addStyleName("colored-when-hover")
+        btnWatches.addStyleName("active-noborder")
+        btnWatches.id = "watchesBtn"
     }
 
-    private void setupCartBtn() {
-        btnCart.setIcon(VaadinIcons.CART);
-        btnCart.setStyleName("borderless");
-        btnCart.addStyleName("icon-align-right");
-        btnCart.addStyleName("colored-when-hover");
-        btnCart.addStyleName("active-noborder");
-        btnCart.setId("cart");
+    private fun setupCartBtn() {
+        btnCart.icon = VaadinIcons.CART
+        btnCart.styleName = "borderless"
+        btnCart.addStyleName("icon-align-right")
+        btnCart.addStyleName("colored-when-hover")
+        btnCart.addStyleName("active-noborder")
+        btnCart.id = "cart"
     }
 
-    private void setupLoginBtn() {
-        btnLogin.setIcon(VaadinIcons.USER);
-        btnLogin.setStyleName("borderless");
-        btnLogin.addStyleName("icon-align-right");
-        btnLogin.addStyleName("colored-when-hover");
-        btnLogin.addStyleName("active-noborder");
-        btnLogin.setId("loginBtn");
-        btnLogin.setWidth("125px");
+    private fun setupLoginBtn() {
+        btnLogin.icon = VaadinIcons.USER
+        btnLogin.styleName = "borderless"
+        btnLogin.addStyleName("icon-align-right")
+        btnLogin.addStyleName("colored-when-hover")
+        btnLogin.addStyleName("active-noborder")
+        btnLogin.id = "loginBtn"
+        btnLogin.setWidth("125px")
     }
 
-    private void init() {
-        setSpacing(false);
-        setupLogo();
-        setupMenuBar();
-
-        if (eventHandler.getCurrentUser() != null) {
-            setLoginStatusToBtn(true, eventHandler.getCurrentUser());
+    private fun init() {
+        isSpacing = false
+        setupLogo()
+        setupMenuBar()
+        if (eventHandler.currentUser != null) {
+            setLoginStatusToBtn(true, eventHandler.currentUser)
         } else {
-            setLoginStatusToBtn(false, null);
+            setLoginStatusToBtn(false, null)
         }
     }
 
-    private void setEvent() {
-        logo.addClickListener(e -> eventHandler.showHomePage());
-        siteName.addClickListener(e -> eventHandler.showHomePage());
-        btnHome.addClickListener(e -> eventHandler.showHomePage());
-        btnCart.addClickListener(e -> eventHandler.showCartListInSideWindow());
-        btnLogin.addClickListener(e -> eventHandler.showLoginPopup());
-
-        btnWatches.addClickListener(e -> {
-            eventHandler.getSideWindow().close();
-            Page.getCurrent().getUI().getNavigator().navigateTo(WatchesView.NAME);
-            setMenuAllWatchesActive();
-        });
-
-        btnMen.addClickListener(e -> {
-            eventHandler.getSideWindow().close();
-            Page.getCurrent().getUI().getNavigator().navigateTo(MenWatchesView.NAME);
-            setMenuMenWatchesActive();
-        });
-
-        btnWomen.addClickListener(e -> {
-            eventHandler.getSideWindow().close();
-            Page.getCurrent().getUI().getNavigator().navigateTo(WomenWatchesView.NAME);
-            setMenuWomenWatchesActive();
-        });
+    private fun setEvent() {
+        logo.addClickListener { eventHandler.showHomePage() }
+        siteName.addClickListener { eventHandler.showHomePage() }
+        btnHome.addClickListener { eventHandler.showHomePage() }
+        btnCart.addClickListener { eventHandler.showCartListInSideWindow() }
+        btnLogin.addClickListener { eventHandler.showLoginPopup() }
+        btnWatches.addClickListener {
+            eventHandler.sideWindow!!.close()
+            Page.getCurrent().ui.navigator.navigateTo(WatchesView.NAME)
+            setMenuAllWatchesActive()
+        }
+        btnMen.addClickListener {
+            eventHandler.sideWindow!!.close()
+            Page.getCurrent().ui.navigator.navigateTo(MenWatchesView.NAME)
+            setMenuMenWatchesActive()
+        }
+        btnWomen.addClickListener {
+            eventHandler.sideWindow!!.close()
+            Page.getCurrent().ui.navigator.navigateTo(WomenWatchesView.NAME)
+            setMenuWomenWatchesActive()
+        }
     }
 
-    private void clearActiveMenuStyle() {
-        btnHome.removeStyleName("active_menu");
-        btnHome.addStyleName("colored-when-hover");
-        btnWatches.removeStyleName("active_menu");
-        btnWatches.addStyleName("colored-when-hover");
-        btnMen.removeStyleName("active_menu");
-        btnMen.addStyleName("colored-when-hover");
-        btnWomen.removeStyleName("active_menu");
-        btnWomen.addStyleName("colored-when-hover");
+    private fun clearActiveMenuStyle() {
+        btnHome.removeStyleName("active_menu")
+        btnHome.addStyleName("colored-when-hover")
+        btnWatches.removeStyleName("active_menu")
+        btnWatches.addStyleName("colored-when-hover")
+        btnMen.removeStyleName("active_menu")
+        btnMen.addStyleName("colored-when-hover")
+        btnWomen.removeStyleName("active_menu")
+        btnWomen.addStyleName("colored-when-hover")
     }
 
-    private void setActiveMenuStyle(Button activeMenu) {
-        activeMenu.addStyleName("active_menu");
-        activeMenu.removeStyleName("colored-when-hover");
+    private fun setActiveMenuStyle(activeMenu: Button) {
+        activeMenu.addStyleName("active_menu")
+        activeMenu.removeStyleName("colored-when-hover")
     }
 
-    void setMenuAllWatchesActive() {
-        clearActiveMenuStyle();
-        setActiveMenuStyle(btnWatches);
+    fun setMenuAllWatchesActive() {
+        clearActiveMenuStyle()
+        setActiveMenuStyle(btnWatches)
     }
 
-    void setMenuWomenWatchesActive() {
-        clearActiveMenuStyle();
-        setActiveMenuStyle(btnWomen);
+    fun setMenuWomenWatchesActive() {
+        clearActiveMenuStyle()
+        setActiveMenuStyle(btnWomen)
     }
 
-    void setMenuMenWatchesActive() {
-        clearActiveMenuStyle();
-        setActiveMenuStyle(btnMen);
+    fun setMenuMenWatchesActive() {
+        clearActiveMenuStyle()
+        setActiveMenuStyle(btnMen)
     }
 
-    void clickWatchesWithDiscount() {
-        btnWatches.click();
-        ((WatchesView) Page.getCurrent().getUI().getNavigator().getCurrentView()).sortItemByDiscount();
-        btnWatches.focus();
+    fun clickWatchesWithDiscount() {
+        btnWatches.click()
+        (Page.getCurrent().ui.navigator.currentView as WatchesView).sortItemByDiscount()
+        btnWatches.focus()
     }
 
-    void clickMen() {
-        btnMen.click();
-        btnMen.focus();
+    fun clickMen() {
+        btnMen.click()
+        btnMen.focus()
     }
 
-    void clickWomen() {
-        btnWomen.click();
-        btnWomen.focus();
+    fun clickWomen() {
+        btnWomen.click()
+        btnWomen.focus()
     }
 
-    void clickWatches() {
-        btnWatches.click();
-        btnWatches.focus();
+    fun clickWatches() {
+        btnWatches.click()
+        btnWatches.focus()
     }
 
-    void clickFavourite() {
-        clearActiveMenuStyle();
-//        userMenu.focus();
+    fun clickFavourite() {
+        clearActiveMenuStyle()
+        //        userMenu.focus();
+    }
+
+    init {
+        init()
+        setEvent()
     }
 }

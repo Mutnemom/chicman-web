@@ -2,9 +2,8 @@
 
 package com.chicman.service
 
-import com.chicman.service.dto.auth.GuestTokenResponse
-import com.chicman.service.dto.auth.LoginPasswordRequest
-import com.chicman.service.dto.auth.LoginPasswordResponse
+import com.chicman.service.dto.auth.*
+import com.chicman.utility.LogUtils
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
@@ -28,13 +27,6 @@ object AuthService : BaseApiService() {
 
     fun login(guestToken: String, username: String, password: String): LoginPasswordResponse? {
         return call {
-//            restTemplate
-//                .postForObject(
-//                    "$API_ENDPOINT/auth/login/password",
-//                    LoginPasswordRequest(username, password),
-//                    Array<LoginPasswordResponse?>::class.java
-//                )
-
             restTemplate.exchange(
                 "$API_ENDPOINT/auth/login/password",
                 HttpMethod.POST,
@@ -45,6 +37,31 @@ object AuthService : BaseApiService() {
                 Array<LoginPasswordResponse?>::class.java
             ).body
         }?.get(0)
+    }
+
+    fun register(
+        guestToken: String,
+        profileName: String,
+        username: String,
+        password: String,
+        redirectUrl: String
+    ): RegisterResponse? {
+
+        LogUtils.error(profileName)
+        LogUtils.error(username)
+        LogUtils.error(redirectUrl)
+
+        return call {
+            restTemplate.exchange(
+                "$API_ENDPOINT/auth/register",
+                HttpMethod.POST,
+                HttpEntity(
+                    RegisterRequest(profileName, username, password, redirectUrl),
+                    createAuthorizationHeader(guestToken)
+                ),
+                RegisterResponse::class.java
+            ).body
+        }
     }
 
 }

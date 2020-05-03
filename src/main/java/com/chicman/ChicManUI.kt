@@ -62,7 +62,7 @@ class ChicManUI @Autowired constructor(
         }
     }
 
-    private var appPath: String? = null
+    var appPath: String? = null
     private var uploadFile: File? = null
     private var watchesView: WatchesView? = null
     private var menWatchesView: MenWatchesView? = null
@@ -180,7 +180,7 @@ class ChicManUI @Autowired constructor(
 
     fun showSignUpPopup() {
         floatWindow!!.close()
-        val content = SignUp(verificationTokenRepo, this)
+        val content = SignUp(verificationTokenRepo, this, guestBean)
         content.id = "signUpForm"
         floatWindow!!.content = content
         showFloatWindow()

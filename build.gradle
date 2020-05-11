@@ -36,7 +36,6 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa:2.2.4.RELEASE'
-    implementation 'org.springframework.boot:spring-boot-starter-mail:2.2.4.RELEASE'
     implementation 'org.springframework.boot:spring-boot-starter-web:2.2.4.RELEASE'
 
     implementation 'com.vaadin:vaadin-spring-boot-starter:3.0.1'

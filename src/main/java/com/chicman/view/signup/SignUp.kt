@@ -247,10 +247,22 @@ class SignUp(
 
     private fun setEvent() {
         btnSignUp.addClickListener {
-            if (!Utils.isValidUsername(fullName)) return@addClickListener
-            if (!Utils.isValidEmail(email)) return@addClickListener
-            if (!Utils.isValidPassword(password)) return@addClickListener
-            if (!Utils.isValidPasswordConfirm(passwordConfirm, password)) return@addClickListener
+            if (!Utils.isValidUsername(fullName)) {
+                LogUtils.error("invalid username")
+                return@addClickListener
+            }
+            if (!Utils.isValidEmail(email)) {
+                LogUtils.error("invalid email")
+                return@addClickListener
+            }
+            if (!Utils.isValidPassword(password)) {
+                LogUtils.error("invalid password")
+                return@addClickListener
+            }
+            if (!Utils.isValidPasswordConfirm(passwordConfirm, password)) {
+                LogUtils.error("confirm password not match")
+                return@addClickListener
+            }
 
             AuthService.register(
                 guestBean.token!!,
@@ -258,7 +270,8 @@ class SignUp(
                 email.value,
                 password.value,
                 eventHandler.appPath ?: "?"
-            )?.apply { LogUtils.error("register result: $accessToken") }
+            )?.apply {
+                LogUtils.error("register result: $redirectUrl")
 
 //            if (1 > 0) {
 //                // email usable
@@ -278,8 +291,7 @@ class SignUp(
 //                verificationTokenRepo.save(verificationToken)
 //                eventHandler.signedUp(verificationToken, newUser)
 //            }
-
-
+            }
         }
     }
 

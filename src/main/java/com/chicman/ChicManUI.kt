@@ -40,20 +40,19 @@ import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
-import javax.mail.MessagingException
 
 @JavaScript("https://cdn.omise.co/omise.js.gz", "../../../VAADIN/themes/chicmantheme/app.js")
 @Theme("chicmantheme")
 @SpringUI
 @PushStateNavigation
 class ChicManUI @Autowired constructor(
-    val sessionFavourite: FavouriteBean,
-    private val sessionCart: CartBean,
-    private val sessionLogIn: LoggedInBean?,
-    val productsRepo: ProductRepository,
-    val filterBean: FilterBean,
-    private val guestBean: GuestBean,
-    private val verificationTokenRepo: VerificationTokenRepository
+        val sessionFavourite: FavouriteBean,
+        private val sessionCart: CartBean,
+        private val sessionLogIn: LoggedInBean?,
+        val productsRepo: ProductRepository,
+        val filterBean: FilterBean,
+        private val guestBean: GuestBean,
+        private val verificationTokenRepo: VerificationTokenRepository
 ) : UI(), Window.CloseListener {
 
     companion object {
@@ -99,7 +98,8 @@ class ChicManUI @Autowired constructor(
         setupContent()
         setupFooter()
 
-//        setJsFunction()
+        setJsFunction()
+        Page.getCurrent().javaScript.execute("extractUrl()")
 //        handleVerificationToken(vaadinRequest)
     }
 
@@ -129,9 +129,9 @@ class ChicManUI @Autowired constructor(
             true
         } else {
             Notification.show(
-                Messages.get("auth.login.failed"),
-                Messages.get("auth.login.failed2"),
-                Notification.Type.HUMANIZED_MESSAGE
+                    Messages.get("auth.login.failed"),
+                    Messages.get("auth.login.failed2"),
+                    Notification.Type.HUMANIZED_MESSAGE
             )
 
             false
@@ -144,30 +144,6 @@ class ChicManUI @Autowired constructor(
 //        sessionFavourite.resetProductList()
         toolbar!!.updateCartItemNumber(0 /* sessionCart.productList.size */)
         toolbar!!.setLoginStatusToBtn(false, null)
-    }
-
-    fun signedUp(verificationToken: VerificationToken, newCustomer: Customer) {
-        floatWindow!!.close()
-        if (appPath != null) {
-            val confirmLink = StringBuilder()
-            confirmLink.append(appPath)
-            confirmLink.append("?token=")
-            confirmLink.append(verificationToken.token)
-            try {
-                Utils.sendConfirmationSignUpMail(
-                    confirmLink.toString(),
-                    newCustomer.email,
-                    verificationToken.expiryDate)
-                val message = Messages.get("send.mail.success1") +
-                    " " +
-                    newCustomer.email +
-                    " " +
-                    Messages.get("send.mail.success2")
-                Utils.notify(message, 1500, Position.TOP_CENTER, VaadinIcons.CHECK)
-            } catch (e: MessagingException) {
-                e.printStackTrace()
-            }
-        }
     }
 
     fun showLoginPopup() {
@@ -233,10 +209,10 @@ class ChicManUI @Autowired constructor(
     }
 
     fun addNewProduct(
-        productName: String?,
-        productDetails: String?,
-        productPrice: String,
-        dialType: String
+            productName: String?,
+            productDetails: String?,
+            productPrice: String,
+            dialType: String
     ): Boolean {
         var flagSuccess = false
         val imageStream: FileInputStream
@@ -261,7 +237,7 @@ class ChicManUI @Autowired constructor(
             floatWindow!!.close()
             toolbar!!.updateCartItemNumber(sessionCart.productList.size)
             val notification = Notification(Messages.get("product.add")
-                + " " + product.productBrandId + " " + Messages.get("product.add.done"))
+                    + " " + product.productBrandId + " " + Messages.get("product.add.done"))
             notification.delayMsec = 1500
             notification.position = Position.TOP_CENTER
             notification.icon = VaadinIcons.CHECK
@@ -411,14 +387,14 @@ class ChicManUI @Autowired constructor(
                     MemberService.verifyAccount(verificationToken)
 
                     Utils.notify(
-                        Messages.get("confirmation.complete"),
-                        1500,
-                        Position.TOP_CENTER, VaadinIcons.CHECK)
+                            Messages.get("confirmation.complete"),
+                            1500,
+                            Position.TOP_CENTER, VaadinIcons.CHECK)
                 } else {
                     Utils.notify(
-                        Messages.get("confirmation.incomplete"),
-                        1500,
-                        Position.TOP_CENTER, VaadinIcons.CHECK)
+                            Messages.get("confirmation.incomplete"),
+                            1500,
+                            Position.TOP_CENTER, VaadinIcons.CHECK)
                 }
             }
         }
@@ -449,7 +425,7 @@ class ChicManUI @Autowired constructor(
             sideWindowCart.updateCartList(sessionCart.productList)
             floatWindow!!.close()
             val notif = Notification(Messages.get("checkout.success"),
-                Messages.get("checkout.success.description"))
+                    Messages.get("checkout.success.description"))
             notif.delayMsec = 1500
             notif.position = Position.TOP_CENTER
             notif.icon = VaadinIcons.CHECK
